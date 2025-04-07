@@ -1,22 +1,28 @@
 package com.tojo.examerestaurantspringboot.service;
 
 import com.tojo.examerestaurantspringboot.dao.operations.IngredientCrudOperations;
+import com.tojo.examerestaurantspringboot.endpoint.mapper.IngredientRestMapper;
+import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientRest;
 import com.tojo.examerestaurantspringboot.model.Ingredient;
 import com.tojo.examerestaurantspringboot.model.Price;
 import com.tojo.examerestaurantspringboot.service.exception.ClientException;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class IngredientService {
+    private IngredientRestMapper ingredientRestMapper;
     private IngredientCrudOperations ingredientCrudOperation;
-    public IngredientService(IngredientCrudOperations ingredientCrudOperation) {
+
+    public IngredientService(IngredientRestMapper ingredientRestMapper, IngredientCrudOperations ingredientCrudOperation) {
+        this.ingredientRestMapper = ingredientRestMapper;
         this.ingredientCrudOperation = ingredientCrudOperation;
     }
 
-    public List<Ingredient> getAllIngredient(Integer minPrice, Integer maxPrice) {
+    public List<IngredientRest> getAllIngredient(Integer minPrice, Integer maxPrice) {
         if ((minPrice != null && minPrice < 0) || (maxPrice != null && maxPrice < 0)) {
             throw new ClientException("PriceMinFilter or PriceMaxFilter is negative");
         }
@@ -27,16 +33,16 @@ public class IngredientService {
 
         if (minPrice != null && maxPrice != null) {
             List<Ingredient> ingredients = getIngredientBetweenMinPriceAndMaxPrice(minPrice, maxPrice);
-            return ingredients;
+            return toIngredientRest(ingredients);
         } else if (minPrice != null) {
             List<Ingredient> ingredients = getIngredientByMinPrice(minPrice);
-            return ingredients;
+            return toIngredientRest(ingredients);
         } else if (maxPrice != null) {
             List<Ingredient> ingredients = getIngredientByMaxPrice(maxPrice);
-            return ingredients;
+            return toIngredientRest(ingredients);
         }
 
-        return ingredientCrudOperation.getAll(1, 500);
+        return toIngredientRest(ingredientCrudOperation.getAll(1, 500));
     }
 
     public List<Ingredient> getIngredientByMinPrice(int minPrice) {
@@ -60,5 +66,13 @@ public class IngredientService {
         ingredient.addPrices(pricesToAdd);
         List<Ingredient> ingredientsSaved = ingredientCrudOperation.saveAll(List.of(ingredient));
         return ingredientsSaved.getFirst();
+    }
+
+    private List<IngredientRest> toIngredientRest(List<Ingredient> ingredients) {
+        List<IngredientRest> ingredientRests = new ArrayList<>();
+        for (Ingredient ingredient : ingredients) {
+            ingredientRests.add(ingredientRestMapper.toRest(ingredient));
+        }
+        return ingredientRests;
     }
 }

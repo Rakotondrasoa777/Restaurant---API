@@ -1,6 +1,9 @@
 package com.tojo.examerestaurantspringboot.model;
 
+import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 public class Ingredient {
     private int idIngredient;
@@ -47,5 +50,47 @@ public class Ingredient {
         prices.forEach(price -> price.setIngredient(this));
         getPrices().addAll(prices);
         return getPrices();
+    }
+
+    public List<StockMovement> addStockMovements(List<StockMovement> stockMovements) {
+        stockMovements.forEach(stockMovement -> stockMovement.setIngredient(this));
+        if (getStockMovements() == null || getStockMovements().isEmpty()){
+            return stockMovements;
+        }
+        getStockMovements().addAll(stockMovements);
+        return getStockMovements();
+    }
+
+    public int getActualPrice() {
+        return findActualPrice().orElse(new Price(0)).getPrice();
+    }
+
+    public double getActualStockQuantity() {
+        return findActualStockMovement().orElse(new StockMovement(0.0)).getQuantity();
+    }
+
+    private Optional<Price> findActualPrice() {
+        return prices.stream().max(Comparator.comparing(Price::getDatePrice));
+    }
+
+    private Optional<StockMovement> findActualStockMovement() {
+        return stockMovements.stream().max(Comparator.comparing(StockMovement::getDateMove));
+    }
+
+    public Double getAvailableQuantityAt(Timestamp datetime) {
+        List<StockMovement> stockMovementsBeforeToday = stockMovements.stream()
+                .filter(stockMovement ->
+                        stockMovement.getDateMove().before(datetime)
+                                || stockMovement.getDateMove().equals(datetime))
+                .toList();
+        double quantity = 0;
+        for (StockMovement stockMovement : stockMovementsBeforeToday) {
+            if (StockMovementType.ENTER.equals(stockMovement.getMovementType())) {
+                quantity += stockMovement.getQuantity();
+            } else if (StockMovementType.EXIT.equals(stockMovement.getMovementType())) {
+                quantity -= stockMovement.getQuantity();
+            }
+        }
+        return quantity;
     }
 }

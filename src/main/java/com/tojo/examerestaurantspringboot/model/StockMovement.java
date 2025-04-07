@@ -22,6 +22,10 @@ public class StockMovement {
     public StockMovement() {
     }
 
+    public StockMovement(double quantity) {
+        this.quantity = quantity;
+    }
+
     public int getId() {
         return id;
     }

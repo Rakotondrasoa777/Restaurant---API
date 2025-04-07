@@ -1,0 +1,312 @@
+openapi: 3.0.3
+info:
+  title: Restaurant Management API
+  version: 1.0.0
+  description: API pour la gestion des ingrédients, plats et commandes.
+servers:
+  - url: http://localhost:8080/api
+
+paths:
+  /ingredients:
+    get:
+      summary: Liste tous les ingrédients avec leurs prix, stocks et historiques.
+      parameters:
+        - in: query
+          name: minPrice
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: maxPrice
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IngredientDetails"
+
+  /ingredients/{id}/prices:
+    put:
+      summary: Ajoute de liste de nouveaux prix dans l'historique d'un ingrédient.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prices:
+                  type: array
+                  items:
+                    type: number
+                    format: float
+      responses:
+        '200':
+          description: Prix mis à jour.
+        '404':
+          description: Ingrédient non trouvé.
+
+  /ingredients/{id}/stockMovements:
+    put:
+      summary: Ajoute de nouveaux liste de mouvements de stock à un ingrédient.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                movements:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      unit:
+                        type: string
+                      quantity:
+                        type: integer
+                      type:
+                        type: string
+                        enum: [IN, OUT]
+      responses:
+        '200':
+          description: Stock mis à jour.
+        '404':
+          description: Ingrédient non trouvé.
+
+  /dishes:
+    get:
+      summary: Liste tous les plats avec leurs ingrédients et stocks.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DishDetails"
+
+  /dishes/{id}/ingredients:
+    put:
+      summary: ajout liste d' ingrédients d'un plat avec leurs quantités.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ingredients:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      ingredientId:
+                        type: integer
+                      quantity:
+                        type: number
+      responses:
+        '200':
+          description: Ingrédients mis à jour.
+        '404':
+          description: Plat non trouvé.
+
+  /orders/{reference}:
+    get:
+      summary: Récupère une commande par référence.
+      parameters:
+        - name: reference
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderDetails"
+        '404':
+          description: Commande non trouvée.
+
+  /orders/{reference}/dishes:
+    put:
+      summary: Modifie la liste des plats dans une commande (et leur quantité).
+      parameters:
+        - name: reference
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dishes:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      dishId:
+                        type: integer
+                      quantity:
+                        type: integer
+                status:
+                  type: string
+                  enum: [CREATED, CONFIRMED]
+      responses:
+        '200':
+          description: Commande mise à jour.
+        '404':
+          description: Commande non trouvée.
+
+  /orders/{reference}/dishes/{dishId}:
+    put:
+      summary: Change le statut d'un plat dans une commande.
+      parameters:
+        - name: reference
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: dishId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [IN_PROGRESS, FINISHED, DELIVERED]
+      responses:
+        '200':
+          description: Statut mis à jour.
+        '404':
+          description: Commande ou plat non trouvé.
+
+components:
+  schemas:
+    IngredientDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        currentPrice:
+          type: number
+        priceHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              price:
+                type: integer
+              datePrice:
+                type: string
+                format: date
+        stockMovements:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              quantityIngredient:
+                type: integer
+              type:
+                type: string
+                enum: [ENTER, EXIT]
+              unit:
+                type: string
+                enum: [G, L, U]
+              dateMove:
+                type: string
+                format: date
+        currentStock:
+          type: integer
+
+    DishDetails:
+      type: object
+      properties:
+        id:
+           type: integer
+        name:
+          type: string
+        ingredients:
+          type: array
+          items:
+            type: object
+            properties:
+              ingredientId:
+                type: integer
+              name:
+                type: string
+              currentPrice:
+                type: number
+              currentStock:
+                type: integer
+              requiredQuantity:
+                type: number
+        availableDish:
+          type: integer
+
+    OrderDetails:
+      type: object
+      properties:
+        reference:
+          type: string
+        currentStatusOrder:
+          type: string
+          enum: [CREATED, CONFIRMED, IN_PREPARATION, COMPLETED, SERVED]
+        dishes:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              currentPrice:
+                type: number
+              currentStatusDish:
+                type: string
+                enum: [CREATED, CONFIRMED, IN_PREPARATION, COMPLETED, SERVED]
+        dishToOrder:
+          type: integer

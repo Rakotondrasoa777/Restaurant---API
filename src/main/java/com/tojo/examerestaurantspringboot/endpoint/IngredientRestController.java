@@ -1,5 +1,6 @@
 package com.tojo.examerestaurantspringboot.endpoint;
 
+import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientRest;
 import com.tojo.examerestaurantspringboot.model.Ingredient;
 import com.tojo.examerestaurantspringboot.service.IngredientService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +19,7 @@ public class IngredientRestController {
     }
 
     @GetMapping("/ingredients")
-    public List<Ingredient> getIngredients(
+    public List<IngredientRest> getIngredients(
             @RequestParam(required = false) Integer minPrice,
             @RequestParam(required = false) Integer maxPrice
     ) {
