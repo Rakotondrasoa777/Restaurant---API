@@ -1,28 +1,37 @@
 package com.tojo.examerestaurantspringboot.service;
 
 import com.tojo.examerestaurantspringboot.dao.operations.IngredientCrudOperations;
+import com.tojo.examerestaurantspringboot.dao.operations.PriceCrudOperations;
 import com.tojo.examerestaurantspringboot.endpoint.mapper.IngredientRestMapper;
+import com.tojo.examerestaurantspringboot.endpoint.mapper.PriceRestMapper;
+import com.tojo.examerestaurantspringboot.endpoint.rest.CreateIngredientPrice;
 import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientRest;
+import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientWithCurrentPriceAndStock;
 import com.tojo.examerestaurantspringboot.model.Ingredient;
 import com.tojo.examerestaurantspringboot.model.Price;
 import com.tojo.examerestaurantspringboot.service.exception.ClientException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class IngredientService {
     private IngredientRestMapper ingredientRestMapper;
     private IngredientCrudOperations ingredientCrudOperation;
+    private PriceCrudOperations priceCrudOperations;
+    @Autowired private PriceRestMapper priceRestMapper;
 
-    public IngredientService(IngredientRestMapper ingredientRestMapper, IngredientCrudOperations ingredientCrudOperation) {
+    public IngredientService(IngredientRestMapper ingredientRestMapper, IngredientCrudOperations ingredientCrudOperation, PriceCrudOperations priceCrudOperations) {
         this.ingredientRestMapper = ingredientRestMapper;
         this.ingredientCrudOperation = ingredientCrudOperation;
+        this.priceCrudOperations = priceCrudOperations;
     }
 
-    public List<IngredientRest> getAllIngredient(Integer minPrice, Integer maxPrice) {
+    public List<IngredientWithCurrentPriceAndStock> getAllIngredient(Integer minPrice, Integer maxPrice) {
         if ((minPrice != null && minPrice < 0) || (maxPrice != null && maxPrice < 0)) {
             throw new ClientException("PriceMinFilter or PriceMaxFilter is negative");
         }
@@ -57,22 +66,20 @@ public class IngredientService {
         return ingredientCrudOperation.getIngredientsFilterByPrice(minPrice, maxPrice);
     }
 
-    public Ingredient getIngredientById(int id) {
-        return ingredientCrudOperation.findById(id);
+    public IngredientRest getIngredientById(int id) {
+        return ingredientRestMapper.toRest(ingredientCrudOperation.findById(id));
     }
 
-    public Ingredient addPrices(int ingredientId, List<Price> pricesToAdd) throws SQLException {
-        Ingredient ingredient = ingredientCrudOperation.findById(ingredientId);
-        ingredient.addPrices(pricesToAdd);
-        List<Ingredient> ingredientsSaved = ingredientCrudOperation.saveAll(List.of(ingredient));
-        return ingredientsSaved.getFirst();
+    public Ingredient addPrices(int ingredientId, List<Price> pricesToAdd) {
+        priceCrudOperations.updatePriceIngredient(pricesToAdd, ingredientId);
+        return ingredientCrudOperation.findById(ingredientId);
     }
 
-    private List<IngredientRest> toIngredientRest(List<Ingredient> ingredients) {
-        List<IngredientRest> ingredientRests = new ArrayList<>();
+    private List<IngredientWithCurrentPriceAndStock> toIngredientRest(List<Ingredient> ingredients) {
+        List<IngredientWithCurrentPriceAndStock> ingredientWithCurrentPriceAndStocks = new ArrayList<>();
         for (Ingredient ingredient : ingredients) {
-            ingredientRests.add(ingredientRestMapper.toRest(ingredient));
+            ingredientWithCurrentPriceAndStocks.add(ingredientRestMapper.toRestWithCurentPriceAndStock(ingredient));
         }
-        return ingredientRests;
+        return ingredientWithCurrentPriceAndStocks;
     }
 }

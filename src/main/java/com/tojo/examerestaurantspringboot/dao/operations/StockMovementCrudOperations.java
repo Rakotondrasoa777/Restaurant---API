@@ -34,11 +34,16 @@ public class StockMovementCrudOperations implements CrudOperations <StockMovemen
 
     @Override
     public List<StockMovement> saveAll(List<StockMovement> entities) {
+        return List.of();
+    }
+
+
+    public List<StockMovement> updateStock(List<StockMovement> entities, int idIngredient) {
         List<StockMovement> stockMovements = new ArrayList<>();
         String sql = """
                 insert into stock (id_stock, quantity_ingredient_available, unit, move_type, date_of_move, id_ingredient)
                 values (?, ?, ?, ?, ?, ?)
-                on conflict (id) do nothing returning id_stock, quantity_ingredient_available, unit, move_type, date_of_move, id_ingredient""";
+                on conflict (id_stock) do nothing returning id_stock, quantity_ingredient_available, unit, move_type, date_of_move, id_ingredient""";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement =
                      connection.prepareStatement(sql)) {
@@ -46,10 +51,10 @@ public class StockMovementCrudOperations implements CrudOperations <StockMovemen
                 try {
                     statement.setInt(1, entityToSave.getId());
                     statement.setDouble(2, entityToSave.getQuantity());
-                    statement.setString(3, entityToSave.getUnit().name());
-                    statement.setString(4, entityToSave.getMovementType().name());
+                    statement.setObject(3, entityToSave.getUnit(), Types.OTHER);
+                    statement.setObject(4, entityToSave.getMovementType(), Types.OTHER);
                     statement.setTimestamp(5, Timestamp.from(now()));
-                    statement.setInt(6, entityToSave.getIngredient().getIdIngredient());
+                    statement.setInt(6, idIngredient);
                     statement.addBatch();
                 } catch (SQLException e) {
                     throw new ServerException(e);

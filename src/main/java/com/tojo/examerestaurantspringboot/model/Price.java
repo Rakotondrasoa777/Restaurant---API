@@ -16,7 +16,14 @@ public class Price {
         this.datePrice = new Date(System.currentTimeMillis());
     }
 
+    public Price(int id, int price, Date datePrice) {
+        this.id = id;
+        this.price = price;
+        this.datePrice = datePrice;
+    }
+
     public Price(int price, Date datePrice) {
+        this.id = id;
         this.price = price;
         this.datePrice = datePrice;
     }
@@ -58,5 +65,15 @@ public class Price {
 
     public void setDatePrice(Date datePrice) {
         this.datePrice = datePrice;
+    }
+
+    @Override
+    public String toString() {
+        return "Price{" +
+                "id=" + id +
+                ", ingredient=" + ingredient +
+                ", price=" + price +
+                ", datePrice=" + datePrice +
+                '}';
     }
 }

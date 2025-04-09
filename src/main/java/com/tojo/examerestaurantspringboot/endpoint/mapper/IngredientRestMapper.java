@@ -2,6 +2,7 @@ package com.tojo.examerestaurantspringboot.endpoint.mapper;
 
 import com.tojo.examerestaurantspringboot.dao.operations.IngredientCrudOperations;
 import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientRest;
+import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientWithCurrentPriceAndStock;
 import com.tojo.examerestaurantspringboot.endpoint.rest.PriceRest;
 import com.tojo.examerestaurantspringboot.endpoint.rest.StockMovementRest;
 import com.tojo.examerestaurantspringboot.model.Ingredient;
@@ -16,6 +17,22 @@ public class IngredientRestMapper {
     @Autowired private StockMovementRestMapper stockMovementRestMapper;
     @Autowired private IngredientCrudOperations ingredientCrudOperations;
 
+    public IngredientWithCurrentPriceAndStock toRestWithCurentPriceAndStock(Ingredient ingredient) {
+        List<PriceRest> prices = ingredient.getPrices().stream()
+                .map(price -> priceRestMapper.apply(price)).toList();
+        List<StockMovementRest> stockMovementRests = ingredient.getStockMovements().stream()
+                .map(stockMovement -> stockMovementRestMapper.apply(stockMovement))
+                .toList();
+        return new IngredientWithCurrentPriceAndStock(
+                ingredient.getIdIngredient(),
+                ingredient.getName(),
+                ingredient.getActualPrice(),
+                ingredient.getActualStockQuantity(),
+                prices,
+                stockMovementRests
+        );
+    }
+
     public IngredientRest toRest(Ingredient ingredient) {
         List<PriceRest> prices = ingredient.getPrices().stream()
                 .map(price -> priceRestMapper.apply(price)).toList();
@@ -25,8 +42,6 @@ public class IngredientRestMapper {
         return new IngredientRest(
                 ingredient.getIdIngredient(),
                 ingredient.getName(),
-                ingredient.getActualPrice(),
-                ingredient.getActualStockQuantity(),
                 prices,
                 stockMovementRests
         );

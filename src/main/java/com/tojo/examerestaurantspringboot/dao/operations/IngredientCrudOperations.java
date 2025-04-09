@@ -87,8 +87,8 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
                     } catch (SQLException e) {
                         throw new ServerException(e);
                     }
-                    priceCrudOperations.saveAll((entityToSave.getPrices()));
-                    stockMovementCrudOperations.saveAll((entityToSave.getStockMovements()));
+                    priceCrudOperations.updatePriceIngredient(entityToSave.getPrices() , entityToSave.getIdIngredient());
+                    stockMovementCrudOperations.updateStock(entityToSave.getStockMovements(), entityToSave.getIdIngredient());
                 });
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {

@@ -43,15 +43,6 @@ public class Ingredient {
 
     public void setStockMovements(List<StockMovement> stockMovements) {this.stockMovements = stockMovements;}
 
-    public List<Price> addPrices(List<Price> prices) {
-        if (getPrices() == null || getPrices().isEmpty()){
-            return prices;
-        }
-        prices.forEach(price -> price.setIngredient(this));
-        getPrices().addAll(prices);
-        return getPrices();
-    }
-
     public List<StockMovement> addStockMovements(List<StockMovement> stockMovements) {
         stockMovements.forEach(stockMovement -> stockMovement.setIngredient(this));
         if (getStockMovements() == null || getStockMovements().isEmpty()){
@@ -92,5 +83,16 @@ public class Ingredient {
             }
         }
         return quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "Ingredient{" +
+                "idIngredient=" + idIngredient +
+                ", name='" + name + '\'' +
+                ", unit=" + unit +
+                ", prices=" + prices +
+                ", stockMovements=" + stockMovements +
+                '}';
     }
 }

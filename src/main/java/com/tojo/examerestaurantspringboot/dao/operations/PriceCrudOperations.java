@@ -35,31 +35,37 @@ public class PriceCrudOperations implements CrudOperations <Price>{
 
     @Override
     public List<Price> saveAll(List<Price> entities) {
-        List<Price> prices = new ArrayList<>();
+        return List.of();
+    }
+
+
+    public List<Price> updatePriceIngredient(List<Price> pricesToUpdate, int idIngredient) {
+        List<Price> savedPrices = new ArrayList<>();
+
+        String sql = "INSERT INTO history_price (id, ingredient_price, date_price, id_ingredient)"+
+        " VALUES (?, ?, ?, ?)"+
+        " ON CONFLICT (id) DO UPDATE SET ingredient_price = EXCLUDED.ingredient_price, date_price = EXCLUDED.date_price"+
+        " RETURNING id, ingredient_price, date_price";
+
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement("insert into history_price (id, ingredient_price, date_price, id_ingredient) values (?, ?, ?, ?)"
-                             + " on conflict (id) do nothing"
-                             + " returning id,ingredient_price, date_price, id_ingredient");) {
-            entities.forEach(entityToSave -> {
-                try {
-                    statement.setInt(1, entityToSave.getId());
-                    statement.setInt(2, entityToSave.getPrice());
-                    statement.setDate(3, entityToSave.getDatePrice());
-                    statement.setLong(4, entityToSave.getIngredient().getIdIngredient());
-                    statement.addBatch();
-                } catch (SQLException e) {
-                    throw new ServerException(e);
-                }
-            });
-            try (ResultSet resultSet = statement.executeQuery()) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            for (Price price : pricesToUpdate) {
+                statement.setInt(1, price.getId());
+                statement.setInt(2, price.getPrice());
+                statement.setDate(3, price.getDatePrice());
+                statement.setInt(4, idIngredient);
+                ResultSet resultSet = statement.executeQuery();
                 while (resultSet.next()) {
-                    prices.add(priceMapper.apply(resultSet));
+                    savedPrices.add(priceMapper.apply(resultSet));
                 }
             }
-            return prices;
+
+            System.out.println(pricesToUpdate);
+            return savedPrices;
+
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ServerException(e);
         }
     }
 
@@ -69,7 +75,7 @@ public class PriceCrudOperations implements CrudOperations <Price>{
              PreparedStatement statement = connection.prepareStatement("select p.id, p.ingredient_price, p.date_price from history_price p"
                      + " join ingredient i on p.id_ingredient = i.id_ingredient"
                      + " where p.id_ingredient = ?")) {
-            statement.setLong(1, idIngredient);
+            statement.setInt(1, idIngredient);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     Price price = priceMapper.apply(resultSet);
