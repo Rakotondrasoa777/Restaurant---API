@@ -3,7 +3,9 @@ package com.tojo.examerestaurantspringboot.endpoint.rest;
 import com.tojo.examerestaurantspringboot.model.StockMovementType;
 import com.tojo.examerestaurantspringboot.model.Unit;
 
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
 
 public class CreateIngredientStock {
     private int id;
@@ -12,12 +14,12 @@ public class CreateIngredientStock {
     private Unit unit;
     private Timestamp dateMove;
 
-    public CreateIngredientStock(int id, StockMovementType movementType, int quantityIngredientAvailable, Unit unit, Timestamp dateMove) {
+    public CreateIngredientStock(int id, StockMovementType movementType, int quantityIngredientAvailable, Unit unit) {
         this.id = id;
         this.movementType = movementType;
         this.quantityIngredientAvailable = quantityIngredientAvailable;
         this.unit = unit;
-        this.dateMove = dateMove;
+        this.dateMove = Timestamp.from(Instant.now());
     }
 
     public int getId() {
@@ -38,5 +40,16 @@ public class CreateIngredientStock {
 
     public Timestamp getDateMove() {
         return dateMove;
+    }
+
+    @Override
+    public String toString() {
+        return "CreateIngredientStock{" +
+                "id=" + id +
+                ", movementType=" + movementType +
+                ", quantityIngredientAvailable=" + quantityIngredientAvailable +
+                ", unit=" + unit +
+                ", dateMove=" + dateMove +
+                '}';
     }
 }

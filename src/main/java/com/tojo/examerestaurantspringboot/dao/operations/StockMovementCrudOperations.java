@@ -41,30 +41,33 @@ public class StockMovementCrudOperations implements CrudOperations <StockMovemen
     public List<StockMovement> updateStock(List<StockMovement> entities, int idIngredient) {
         List<StockMovement> stockMovements = new ArrayList<>();
         String sql = """
-                insert into stock (id_stock, quantity_ingredient_available, unit, move_type, date_of_move, id_ingredient)
-                values (?, ?, ?, ?, ?, ?)
-                on conflict (id_stock) do nothing returning id_stock, quantity_ingredient_available, unit, move_type, date_of_move, id_ingredient""";
+                INSERT INTO stock (id_stock, quantity_ingredient_available, unit, move_type, date_of_move, id_ingredient)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT (id_stock) DO UPDATE SET
+                    quantity_ingredient_available = EXCLUDED.quantity_ingredient_available,
+                    unit = EXCLUDED.unit,
+                    move_type = EXCLUDED.move_type,
+                    date_of_move = EXCLUDED.date_of_move,
+                    id_ingredient = EXCLUDED.id_ingredient
+                RETURNING id_stock, quantity_ingredient_available, unit, move_type, date_of_move, id_ingredient""";
+
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement =
                      connection.prepareStatement(sql)) {
-            entities.forEach(entityToSave -> {
-                try {
-                    statement.setInt(1, entityToSave.getId());
-                    statement.setDouble(2, entityToSave.getQuantity());
-                    statement.setObject(3, entityToSave.getUnit(), Types.OTHER);
-                    statement.setObject(4, entityToSave.getMovementType(), Types.OTHER);
-                    statement.setTimestamp(5, Timestamp.from(now()));
-                    statement.setInt(6, idIngredient);
-                    statement.addBatch();
-                } catch (SQLException e) {
-                    throw new ServerException(e);
-                }
-            });
-            try (ResultSet resultSet = statement.executeQuery()) {
+            for (StockMovement entity : entities) {
+                statement.setInt(1, entity.getId());
+                statement.setDouble(2, entity.getQuantity());
+                statement.setObject(3, entity.getUnit(), Types.OTHER);
+                statement.setObject(4, entity.getMovementType(), Types.OTHER);
+                statement.setTimestamp(5, Timestamp.from(now()));
+                statement.setInt(6, idIngredient);
+                ResultSet resultSet = statement.executeQuery();
+
                 while (resultSet.next()) {
                     stockMovements.add(stockMovementMapper.apply(resultSet));
                 }
             }
+
             return stockMovements;
         } catch (SQLException e) {
             throw new ServerException(e);

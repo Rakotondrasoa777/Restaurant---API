@@ -10,6 +10,14 @@ public class StockMovement {
     private StockMovementType movementType;
     private Timestamp dateMove;
 
+    public StockMovement(int id, StockMovementType movementType, double quantity, Unit unit, Timestamp dateMove) {
+        this.id = id;
+        this.quantity = quantity;
+        this.unit = unit;
+        this.movementType = movementType;
+        this.dateMove = dateMove;
+    }
+
     public StockMovement(int id, Ingredient ingredient, double quantity, Unit unit, StockMovementType movementType, Timestamp dateMove) {
         this.id = id;
         this.ingredient = ingredient;

@@ -48,4 +48,17 @@ public class IngredientRestController {
         IngredientRest ingredientRest = ingredientRestMapper.toRest(ingredient);
         return ingredientRest;
     }
+
+    @PutMapping("/ingredients/{idIngredient}/stockMovements")
+    public IngredientRest saveStock(@RequestBody List<CreateIngredientStock> stocks, @PathVariable int idIngredient) throws SQLException {
+        System.out.println(stocks);
+        List<StockMovement> stockList = stocks.stream()
+                .map(ingredientStock ->
+                        new StockMovement(ingredientStock.getId(), ingredientStock.getMovementType(), ingredientStock.getQuantityIngredientAvailable(), ingredientStock.getUnit(), ingredientStock.getDateMove()))
+                .toList();
+        Ingredient ingredient = serviceIngredient.addStock(idIngredient, stockList);
+        ingredient.setIdIngredient(idIngredient);
+        IngredientRest ingredientRest = ingredientRestMapper.toRest(ingredient);
+        return ingredientRest;
+    }
 }
