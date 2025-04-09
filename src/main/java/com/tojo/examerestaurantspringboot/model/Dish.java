@@ -1,49 +1,54 @@
 package com.tojo.examerestaurantspringboot.model;
 
+import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientAndRequiredQuantity;
+
 import java.util.List;
 
 public class Dish {
-    private int id_dish;
+    private int idDish;
     private String name;
-    private int unitPrice;
-    private List<Ingredient> ingredientList;
+    private List<IngredientAndRequiredQuantity> ingredientList;
+    private int availableDish;
 
-    public Dish(int id_dish, String name, int unitPrice, List<Ingredient> ingredientList) {
-        this.id_dish = id_dish;
-        this.name = name;
-        this.unitPrice = unitPrice;
-        this.ingredientList = ingredientList;
+    public Dish() {
     }
 
-    public int getId_dish() {
-        return id_dish;
+    public Dish(int idDish, String name, List<IngredientAndRequiredQuantity> ingredientList, int availableDish) {
+        this.idDish = idDish;
+        this.name = name;
+        this.ingredientList = ingredientList;
+        this.availableDish = availableDish;
+    }
+
+    public int getIdDish() {
+        return idDish;
+    }
+
+    public void setIdDish(int idDish) {
+        this.idDish = idDish;
     }
 
     public String getName() {
         return name;
     }
 
-    public int getUnitPrice() {
-        return unitPrice;
-    }
-
-    public List<Ingredient> getIngredientList() {
-        return ingredientList;
-    }
-
-    public void setId_dish(int id_dish) {
-        this.id_dish = id_dish;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
 
-    public void setUnitPrice(int unitPrice) {
-        this.unitPrice = unitPrice;
+    public List<IngredientAndRequiredQuantity> getIngredientList() {
+        return ingredientList;
     }
 
-    public void setIngredientList(List<Ingredient> ingredientList) {
+    public void setIngredientList(List<IngredientAndRequiredQuantity> ingredientList) {
         this.ingredientList = ingredientList;
+    }
+
+    public int getAvailableDish() {
+        return availableDish;
+    }
+
+    public void setAvailableQuantity(int availableQuantity) {
+        this.availableDish = availableQuantity;
     }
 }

@@ -81,4 +81,16 @@ public class StockMovement {
     public void setDateMove(Timestamp dateMove) {
         this.dateMove = dateMove;
     }
+
+    @Override
+    public String toString() {
+        return "StockMovement{" +
+                "id=" + id +
+                ", ingredient=" + ingredient +
+                ", quantity=" + quantity +
+                ", unit=" + unit +
+                ", movementType=" + movementType +
+                ", dateMove=" + dateMove +
+                '}';
+    }
 }

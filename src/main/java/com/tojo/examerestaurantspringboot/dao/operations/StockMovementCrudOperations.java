@@ -3,6 +3,7 @@ package com.tojo.examerestaurantspringboot.dao.operations;
 import com.tojo.examerestaurantspringboot.dao.DataSource;
 import com.tojo.examerestaurantspringboot.dao.mapper.StockMovementMapper;
 import com.tojo.examerestaurantspringboot.model.StockMovement;
+import com.tojo.examerestaurantspringboot.model.StockMovementType;
 import com.tojo.examerestaurantspringboot.service.exception.ServerException;
 import org.springframework.stereotype.Repository;
 
@@ -87,6 +88,38 @@ public class StockMovementCrudOperations implements CrudOperations <StockMovemen
                     stockMovements.add(stockMovementMapper.apply(resultSet));
                 }
                 return stockMovements;
+            }
+        } catch (SQLException e) {
+            throw new ServerException(e);
+        }
+    }
+
+    public double getCurrentStockOfIngredientById(int idIngredient) {
+        List<StockMovement> stockMovements = new ArrayList<>();
+        double result = 0.0;
+        String sql = "select * from stock where id_ingredient = ?";
+
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, idIngredient);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                stockMovements.add(stockMovementMapper.apply(resultSet));
+            }
+
+            for (StockMovement stockMovement : stockMovements) {
+                if (stockMovement.getMovementType() == StockMovementType.ENTER) {
+                    result += stockMovement.getQuantity();
+                } else if (stockMovement.getMovementType() == StockMovementType.EXIT) {
+                    result -= stockMovement.getQuantity();
+                }
+            }
+
+            System.out.println(stockMovements);
+            if (result < 0) {
+                return result *= -1;
+            } else {
+                return result;
             }
         } catch (SQLException e) {
             throw new ServerException(e);
