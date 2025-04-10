@@ -1,6 +1,12 @@
 package com.tojo.examerestaurantspringboot.model;
+import com.tojo.examerestaurantspringboot.dao.DataSource;
 import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientAndRequiredQuantity;
+import com.tojo.examerestaurantspringboot.service.exception.ServerException;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,5 +61,24 @@ public class Dish {
 
     public void setAvailableDish(int availableDish) {
         this.availableDish = availableDish;
+    }
+
+    public int getDishPrice() {
+        DataSource dataSource = new DataSource();
+        String sql = "select unit_price from dish where id_dish = ?";
+        int result = 0;
+        try(Connection conn = dataSource.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+                preparedStatement.setInt(1, this.idDish);
+
+                ResultSet resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    result = resultSet.getInt("unit_price");
+                }
+
+                return result;
+        } catch (SQLException e) {
+            throw new ServerException(e);
+        }
     }
 }

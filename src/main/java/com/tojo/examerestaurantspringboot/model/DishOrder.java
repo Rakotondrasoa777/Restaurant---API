@@ -1,5 +1,8 @@
 package com.tojo.examerestaurantspringboot.model;
 
+import com.tojo.examerestaurantspringboot.dao.operations.DishOrderCrudOperations;
+
+import java.util.Comparator;
 import java.util.List;
 
 public class DishOrder {
@@ -7,9 +10,16 @@ public class DishOrder {
     private Dish dish;
     private int quantityOfDish;
     private List<DishOrderStatus> statusDishOrder;
-    private int referenceOrder;
+    private String referenceOrder;
 
-    public DishOrder(int idDishOrder, Dish dish, int quantityOfDish, List<DishOrderStatus> statusDishOrder, int referenceOrder) {
+    public DishOrder(int idDishOrder, Dish dish, int quantityOfDish, String referenceOrder) {
+        this.idDishOrder = idDishOrder;
+        this.dish = dish;
+        this.quantityOfDish = quantityOfDish;
+        this.referenceOrder = referenceOrder;
+    }
+
+    public DishOrder(int idDishOrder, Dish dish, int quantityOfDish, List<DishOrderStatus> statusDishOrder, String referenceOrder) {
         this.idDishOrder = idDishOrder;
         this.dish = dish;
         this.quantityOfDish = quantityOfDish;
@@ -49,11 +59,34 @@ public class DishOrder {
         this.statusDishOrder = statusDishOrder;
     }
 
-    public int getReferenceOrder() {
+    public String getReferenceOrder() {
         return referenceOrder;
     }
 
-    public void setReferenceOrder(int referenceOrder) {
+    public void setReferenceOrder(String referenceOrder) {
         this.referenceOrder = referenceOrder;
+    }
+
+    public DishOrderStatus getActualStatus() {
+        return statusDishOrder.stream()
+                .max(Comparator.comparing(DishOrderStatus::getDateDishOrderStatus))
+                .get();
+    }
+
+    public Status getStatus() {
+        return statusDishOrder.stream()
+                .max(Comparator.comparing(DishOrderStatus::getDateDishOrderStatus))
+                .get().getDishOrderStatus();
+    }
+
+    @Override
+    public String toString() {
+        return "DishOrder{" +
+                "idDishOrder=" + idDishOrder +
+                ", dish=" + dish +
+                ", quantityOfDish=" + quantityOfDish +
+                ", statusDishOrder=" + statusDishOrder +
+                ", referenceOrder='" + referenceOrder + '\'' +
+                '}';
     }
 }

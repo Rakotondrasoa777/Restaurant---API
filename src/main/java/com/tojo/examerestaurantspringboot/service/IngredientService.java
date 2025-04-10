@@ -4,21 +4,15 @@ import com.tojo.examerestaurantspringboot.dao.operations.IngredientCrudOperation
 import com.tojo.examerestaurantspringboot.dao.operations.PriceCrudOperations;
 import com.tojo.examerestaurantspringboot.dao.operations.StockMovementCrudOperations;
 import com.tojo.examerestaurantspringboot.endpoint.mapper.IngredientRestMapper;
-import com.tojo.examerestaurantspringboot.endpoint.mapper.PriceRestMapper;
-import com.tojo.examerestaurantspringboot.endpoint.rest.CreateIngredientPrice;
 import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientRest;
 import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientWithCurrentPriceAndStock;
 import com.tojo.examerestaurantspringboot.model.Ingredient;
 import com.tojo.examerestaurantspringboot.model.Price;
 import com.tojo.examerestaurantspringboot.model.StockMovement;
 import com.tojo.examerestaurantspringboot.service.exception.ClientException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class IngredientService {

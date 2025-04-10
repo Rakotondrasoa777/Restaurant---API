@@ -26,4 +26,12 @@ public class DishOrderStatus {
     public void setDateDishOrderStatus(Timestamp dateDishOrderStatus) {
         this.dateDishOrderStatus = dateDishOrderStatus;
     }
+
+    @Override
+    public String toString() {
+        return "DishOrderStatus{" +
+                "dishOrderStatus=" + dishOrderStatus +
+                ", dateDishOrderStatus=" + dateDishOrderStatus +
+                '}';
+    }
 }
