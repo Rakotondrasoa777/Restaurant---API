@@ -26,4 +26,8 @@ public class OrderService {
     public List<DishOrder> updateDishInOrder(String reference, List<UpdateDishOrder> updateDishOrders) {
         return dishOrderCrudOperations.updateDishOrderInOrder(reference, updateDishOrders);
     }
+
+    public OrderRest confirmOrder(String reference) {
+        return orderCrudOperations.confirmOrder(reference);
+    }
 }

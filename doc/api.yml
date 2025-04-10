@@ -189,6 +189,23 @@ paths:
         '404':
           description: Commande non trouvée.
 
+  /orders/{reference}/confirm:
+    put:
+      summary: Confirmer le commande ainsi que tous ses plats
+      parameters:
+        - name: reference
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderDetails"
+
   /orders/{reference}/dishes/{dishId}:
     put:
       summary: Change le statut d'un plat dans une commande.

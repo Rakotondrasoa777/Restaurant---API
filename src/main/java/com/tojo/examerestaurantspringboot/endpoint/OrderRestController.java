@@ -25,4 +25,9 @@ public class OrderRestController {
         System.out.println(updateDishOrders);
         return orderService.updateDishInOrder(reference, updateDishOrders);
     }
+
+    @PutMapping("/orders/{reference}/confirm")
+    public OrderRest confirmOrder(@PathVariable String reference) {
+        return orderService.confirmOrder(reference);
+    }
 }

@@ -6,14 +6,13 @@ import com.tojo.examerestaurantspringboot.endpoint.rest.OrderRest;
 import com.tojo.examerestaurantspringboot.model.Order;
 import com.tojo.examerestaurantspringboot.model.OrderStatus;
 import com.tojo.examerestaurantspringboot.model.Status;
+import com.tojo.examerestaurantspringboot.service.exception.ClientException;
 import com.tojo.examerestaurantspringboot.service.exception.ServerException;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Repository
@@ -88,5 +87,41 @@ public class OrderCrudOperations implements CrudOperations <Order>{
         } catch (SQLException e) {
             throw new ServerException(e);
         }
+    }
+
+    public OrderRest confirmOrder(String reference) {
+        Status actualStatus = getOrderStatusesByReferenceOrder(reference).stream()
+                .max(Comparator.comparing(OrderStatus::getDateOrderStatus))
+                .orElse(null)
+                .getOrderStatus();
+
+        if (actualStatus == Status.CONFIRMED) {
+            throw new ClientException("Order already confirmed");
+        }
+
+        String confirmOrderSql = "update order_status set status = ?, date_order_status = ? where reference_order = ?";
+        String confirmDishSql = "update dish_order_status set status = ?, date_dish_order_status = ? where reference_order = ?";
+
+        try(Connection connection = dataSource.getConnection()) {
+            try(PreparedStatement preparedStatement1 = connection.prepareStatement(confirmOrderSql)) {
+                preparedStatement1.setObject(1, Status.CONFIRMED, Types.OTHER);
+                preparedStatement1.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                preparedStatement1.setString(3, reference);
+
+                preparedStatement1.executeUpdate();
+            }
+
+            try(PreparedStatement preparedStatement2 = connection.prepareStatement(confirmDishSql)) {
+                preparedStatement2.setObject(1, Status.CONFIRMED, Types.OTHER);
+                preparedStatement2.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                preparedStatement2.setString(3, reference);
+
+                preparedStatement2.executeUpdate();
+            }
+            return getOrderByReference(reference);
+        } catch (SQLException e) {
+            throw new ServerException(e);
+        }
+
     }
 }
