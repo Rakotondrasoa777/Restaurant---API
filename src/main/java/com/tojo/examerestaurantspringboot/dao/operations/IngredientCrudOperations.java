@@ -3,15 +3,14 @@ package com.tojo.examerestaurantspringboot.dao.operations;
 import com.tojo.examerestaurantspringboot.dao.DataSource;
 import com.tojo.examerestaurantspringboot.dao.mapper.IngredientMapper;
 import com.tojo.examerestaurantspringboot.endpoint.mapper.IngredientRestMapper;
+import com.tojo.examerestaurantspringboot.endpoint.rest.AddIngredient;
 import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientAndRequiredQuantity;
+import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientRest;
 import com.tojo.examerestaurantspringboot.model.Ingredient;
 import com.tojo.examerestaurantspringboot.service.exception.ServerException;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -210,6 +209,52 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
             }
 
             return ingredientsAndRequiredQuantities;
+        } catch (SQLException e) {
+            throw new ServerException(e);
+        }
+    }
+
+
+    public List<Ingredient> findIngredientsOfDish(int idDish) {
+        List<Ingredient> ingredients = new ArrayList<>();
+        String sql = "select i.id_ingredient, i.name from ingredient i inner join dish_ingredient di on i.id_ingredient" +
+                "= di.id_ingredient inner join dish d on di.id_dish = d.id_dish where d.id_dish = ?";
+
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
+            preparedStatement.setInt(1, idDish);
+
+            try(ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Ingredient ingredient = ingredientMapper.apply(resultSet);
+                    ingredients.add(ingredient);
+                }
+
+                return ingredients;
+            }
+
+        } catch (SQLException e) {
+            throw new ServerException(e);
+        }
+    }
+
+    public void addIngredientsToDish(List<AddIngredient> ingredientToAdd, int idDish) {
+        String sql = "insert into dish_ingredient (id_dish_ingredient, id_dish, id_ingredient, required_quantity, unit) values (?, ?, ?, ?, ?)" +
+                "on conflict (id_dish_ingredient) do update set id_dish = EXCLUDED.id_dish, id_ingredient = EXCLUDED.id_ingredient, required_quantity = EXCLUDED.required_quantity, unit = EXCLUDED.unit returning*";
+
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            for (AddIngredient addIngredient : ingredientToAdd) {
+                preparedStatement.setInt(1, addIngredient.getId());
+                preparedStatement.setInt(2, idDish);
+                preparedStatement.setInt(3, addIngredient.getIdIngredient());
+                preparedStatement.setDouble(4, addIngredient.getQuantity());
+                preparedStatement.setObject(5, addIngredient.getUnit(), Types.OTHER);
+                preparedStatement.executeQuery();
+            }
+
         } catch (SQLException e) {
             throw new ServerException(e);
         }

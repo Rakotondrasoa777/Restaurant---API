@@ -48,7 +48,6 @@ public class DishCrudOperations implements CrudOperations <Dish>{
                     dish.setIdDish(resultSet.getInt("id_dish"));
                     dish.setName(resultSet.getString("name"));
                     dish.setIngredientList(ingredientCrudOperations.findIngredientAndRequiredQuantityByIdDish(dish.getIdDish()));
-                    dish.setAvailableDish(dish.getAvailableDish());
                     dishes.add(dish);
                 }
             }
@@ -61,7 +60,28 @@ public class DishCrudOperations implements CrudOperations <Dish>{
 
     @Override
     public Dish findById(int id) {
-        return null;
+        String sql = "SELECT id_dish, name FROM dish where id_dish = ?";
+        List<Dish> dishes = new ArrayList<>();
+
+        try(Connection con = dataSource.getConnection();
+            PreparedStatement preparedStatement = con.prepareStatement(sql)){
+
+            preparedStatement.setInt(1, id);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()){
+                while (resultSet.next()) {
+                    Dish dish = new Dish();
+                    dish.setIdDish(resultSet.getInt("id_dish"));
+                    dish.setName(resultSet.getString("name"));
+                    dish.setIngredientList(ingredientCrudOperations.findIngredientAndRequiredQuantityByIdDish(dish.getIdDish()));
+                    dishes.add(dish);
+                }
+            }
+
+            return dishes.getFirst();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

@@ -10,8 +10,13 @@ import java.util.List;
 
 @Component
 public class IngredientRestMapper {
-    @Autowired private PriceRestMapper priceRestMapper;
-    @Autowired private StockMovementRestMapper stockMovementRestMapper;
+    private PriceRestMapper priceRestMapper;
+    private StockMovementRestMapper stockMovementRestMapper;
+
+    public IngredientRestMapper(PriceRestMapper priceRestMapper, StockMovementRestMapper stockMovementRestMapper) {
+        this.priceRestMapper = priceRestMapper;
+        this.stockMovementRestMapper = stockMovementRestMapper;
+    }
 
     public IngredientWithCurrentPriceAndStock toRestWithCurentPriceAndStock(Ingredient ingredient) {
         List<PriceRest> prices = ingredient.getPrices().stream()

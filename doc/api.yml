@@ -308,5 +308,5 @@ components:
               currentStatusDish:
                 type: string
                 enum: [CREATED, CONFIRMED, IN_PREPARATION, COMPLETED, SERVED]
-        dishToOrder:
+        quantityOfDishesToOrder:
           type: integer
