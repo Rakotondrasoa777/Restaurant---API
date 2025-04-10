@@ -3,27 +3,29 @@ package com.tojo.examerestaurantspringboot.dao.operations;
 import com.tojo.examerestaurantspringboot.dao.DataSource;
 import com.tojo.examerestaurantspringboot.endpoint.mapper.DishOrderRestMapper;
 import com.tojo.examerestaurantspringboot.endpoint.rest.DishOrderRest;
+import com.tojo.examerestaurantspringboot.endpoint.rest.OrderRest;
+import com.tojo.examerestaurantspringboot.endpoint.rest.UpdateDishOrder;
 import com.tojo.examerestaurantspringboot.model.DishOrder;
 import com.tojo.examerestaurantspringboot.model.DishOrderStatus;
 import com.tojo.examerestaurantspringboot.model.Status;
+import com.tojo.examerestaurantspringboot.service.exception.ClientException;
 import com.tojo.examerestaurantspringboot.service.exception.ServerException;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Repository
 public class DishOrderCrudOperations implements CrudOperations <DishOrder>{
     private final DataSource dataSource;
     private final DishCrudOperations dishCrudOperations;
-    private final DishOrderRestMapper dishOrderRest;
     private final DishOrderRestMapper dishOrderRestMapper;
 
-    public DishOrderCrudOperations(DataSource dataSource, DishCrudOperations dishCrudOperations, DishOrderRestMapper dishOrderRest, DishOrderRestMapper dishOrderRestMapper) {
+    public DishOrderCrudOperations(DataSource dataSource, DishCrudOperations dishCrudOperations, DishOrderRestMapper dishOrderRestMapper) {
         this.dataSource = dataSource;
         this.dishCrudOperations = dishCrudOperations;
-        this.dishOrderRest = dishOrderRest;
         this.dishOrderRestMapper = dishOrderRestMapper;
     }
 
@@ -186,6 +188,74 @@ public class DishOrderCrudOperations implements CrudOperations <DishOrder>{
             }
 
             return dishOrderStatuses;
+        } catch (SQLException e) {
+            throw new ServerException(e);
+        }
+    }
+
+    public DishOrderStatus getCurrentStatusOfDish(String reference, int idDishOrder) {
+        String sql = "select status, date_dish_order_status from dish_order_status where reference_order = ? and id_dish_order = ?";
+        List<DishOrderStatus> dishOrderStatuses = new ArrayList<>();
+
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, reference);
+            preparedStatement.setInt(2, idDishOrder);
+
+            try(ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    DishOrderStatus dishOrderStatus = new DishOrderStatus(
+                            Status.valueOf(resultSet.getString("status")),
+                            resultSet.getTimestamp("date_dish_order_status")
+                    );
+                    dishOrderStatuses.add(dishOrderStatus);
+                }
+            }
+
+            return dishOrderStatuses.stream()
+                    .max(Comparator.comparing(DishOrderStatus::getDateDishOrderStatus))
+                    .orElse(null);
+        } catch (SQLException e) {
+            throw new ServerException(e);
+        }
+    }
+
+    public List<DishOrder> updateDishOrderInOrder(String reference, List<UpdateDishOrder> dishOrders) {
+        for (UpdateDishOrder dishOrder : dishOrders) {
+            if (getCurrentStatusOfDish(reference, dishOrder.getIdDishOrder()).getDishOrderStatus() == Status.CONFIRMED) {
+                throw new ClientException("Dish order already confirmed");
+            }
+        }
+
+        String sql1 = "update dish_order set quantity_of_dish = ? where reference_order = ? and id_dish_order = ? returning*";
+        String sql2 = "update dish_order_status set status = ?, date_dish_order_status = ? where reference_order = ? and id_dish_order = ? returning*";
+
+        try(Connection connection = dataSource.getConnection()) {
+            try(PreparedStatement preparedStatement1 = connection.prepareStatement(sql1)) {
+                for (UpdateDishOrder dishOrder : dishOrders) {
+                    preparedStatement1.setInt(1, dishOrder.getQuantity());
+                    preparedStatement1.setString(2, reference);
+                    preparedStatement1.setInt(3, dishOrder.getIdDishOrder());
+                    preparedStatement1.executeQuery();
+                }
+            }
+
+            try(PreparedStatement preparedStatement2 = connection.prepareStatement(sql2)) {
+                for (UpdateDishOrder dishOrder : dishOrders) {
+                    preparedStatement2.setObject(1, dishOrder.getStatus(), Types.OTHER);
+                    preparedStatement2.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                    preparedStatement2.setString(3, reference);
+                    preparedStatement2.setInt(4, dishOrder.getIdDishOrder());
+                    preparedStatement2.executeQuery();
+                }
+            }
+
+            List<DishOrder> dishOrdersList = new ArrayList<>();
+            for (UpdateDishOrder dishOrder : dishOrders) {
+                dishOrdersList.add(dishOrderRestMapper.toModel(dishOrder));
+            }
+
+            return dishOrdersList;
         } catch (SQLException e) {
             throw new ServerException(e);
         }

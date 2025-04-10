@@ -2,6 +2,7 @@ package com.tojo.examerestaurantspringboot.model;
 
 import com.tojo.examerestaurantspringboot.dao.operations.DishOrderCrudOperations;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class DishOrder {
     public DishOrder(int idDishOrder, Dish dish, int quantityOfDish, String referenceOrder) {
         this.idDishOrder = idDishOrder;
         this.dish = dish;
+        this.statusDishOrder = new ArrayList<DishOrderStatus>();
         this.quantityOfDish = quantityOfDish;
         this.referenceOrder = referenceOrder;
     }
@@ -70,13 +72,14 @@ public class DishOrder {
     public DishOrderStatus getActualStatus() {
         return statusDishOrder.stream()
                 .max(Comparator.comparing(DishOrderStatus::getDateDishOrderStatus))
-                .get();
+                .orElse(null);
     }
 
     public Status getStatus() {
         return statusDishOrder.stream()
                 .max(Comparator.comparing(DishOrderStatus::getDateDishOrderStatus))
-                .get().getDishOrderStatus();
+                .map(DishOrderStatus::getDishOrderStatus)
+                .orElse(null);
     }
 
     @Override

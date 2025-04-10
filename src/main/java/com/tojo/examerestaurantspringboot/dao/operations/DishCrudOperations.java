@@ -1,8 +1,6 @@
 package com.tojo.examerestaurantspringboot.dao.operations;
 
 import com.tojo.examerestaurantspringboot.dao.DataSource;
-import com.tojo.examerestaurantspringboot.dao.mapper.IngredientMapper;
-import com.tojo.examerestaurantspringboot.endpoint.mapper.IngredientRestMapper;
 import com.tojo.examerestaurantspringboot.model.Dish;
 import org.springframework.stereotype.Repository;
 
@@ -16,19 +14,11 @@ import java.util.List;
 @Repository
 public class DishCrudOperations implements CrudOperations <Dish>{
     private final DataSource dataSource;
-    private final IngredientMapper ingredientMapper;
-    private final PriceCrudOperations priceCrudOperations;
-    private final StockMovementCrudOperations stockMovementCrudOperations;
     private final IngredientCrudOperations ingredientCrudOperations;
-    private final IngredientRestMapper ingredientRestMapper;
 
-    public DishCrudOperations(DataSource dataSource, IngredientMapper ingredientMapper, PriceCrudOperations priceCrudOperations, StockMovementCrudOperations stockMovementCrudOperations, IngredientCrudOperations ingredientCrudOperations, IngredientRestMapper ingredientRestMapper) {
+    public DishCrudOperations(DataSource dataSource,IngredientCrudOperations ingredientCrudOperations) {
         this.dataSource = dataSource;
-        this.ingredientMapper = ingredientMapper;
-        this.priceCrudOperations = priceCrudOperations;
-        this.stockMovementCrudOperations = stockMovementCrudOperations;
         this.ingredientCrudOperations = ingredientCrudOperations;
-        this.ingredientRestMapper = ingredientRestMapper;
     }
 
     @Override

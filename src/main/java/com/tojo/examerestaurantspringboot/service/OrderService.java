@@ -1,7 +1,10 @@
 package com.tojo.examerestaurantspringboot.service;
 
+import com.tojo.examerestaurantspringboot.dao.operations.DishOrderCrudOperations;
 import com.tojo.examerestaurantspringboot.dao.operations.OrderCrudOperations;
 import com.tojo.examerestaurantspringboot.endpoint.rest.OrderRest;
+import com.tojo.examerestaurantspringboot.endpoint.rest.UpdateDishOrder;
+import com.tojo.examerestaurantspringboot.model.DishOrder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,12 +12,18 @@ import java.util.List;
 @Service
 public class OrderService {
     private OrderCrudOperations orderCrudOperations;
+    private DishOrderCrudOperations dishOrderCrudOperations;
 
-    public OrderService(OrderCrudOperations orderCrudOperations) {
+    public OrderService(OrderCrudOperations orderCrudOperations, DishOrderCrudOperations dishOrderCrudOperations) {
         this.orderCrudOperations = orderCrudOperations;
+        this.dishOrderCrudOperations = dishOrderCrudOperations;
     }
 
     public OrderRest getAllOrdersByReference(String reference) {
         return orderCrudOperations.getOrderByReference(reference);
+    }
+
+    public List<DishOrder> updateDishInOrder(String reference, List<UpdateDishOrder> updateDishOrders) {
+        return dishOrderCrudOperations.updateDishOrderInOrder(reference, updateDishOrders);
     }
 }
