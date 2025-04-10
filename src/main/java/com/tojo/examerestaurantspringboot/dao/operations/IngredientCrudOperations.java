@@ -206,7 +206,6 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
                 ingredientAndRequiredQuantity.setCurrentPrice(resultSet.getInt("ingredient_price"));
                 ingredientAndRequiredQuantity.setName(resultSet.getString("name"));
                 ingredientAndRequiredQuantity.setRequiredQuantity(resultSet.getDouble("required_quantity"));
-                ingredientAndRequiredQuantity.setCurrentStock(stockMovementCrudOperations.getCurrentStockOfIngredientById(ingredientAndRequiredQuantity.getIdIngredient()));
                 ingredientsAndRequiredQuantities.add(ingredientAndRequiredQuantity);
             }
 

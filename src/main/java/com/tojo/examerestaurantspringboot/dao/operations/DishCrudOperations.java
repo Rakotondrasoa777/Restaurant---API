@@ -48,6 +48,7 @@ public class DishCrudOperations implements CrudOperations <Dish>{
                     dish.setIdDish(resultSet.getInt("id_dish"));
                     dish.setName(resultSet.getString("name"));
                     dish.setIngredientList(ingredientCrudOperations.findIngredientAndRequiredQuantityByIdDish(dish.getIdDish()));
+                    dish.setAvailableDish(dish.getAvailableDish());
                     dishes.add(dish);
                 }
             }

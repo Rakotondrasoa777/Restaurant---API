@@ -1,7 +1,7 @@
 package com.tojo.examerestaurantspringboot.model;
-
 import com.tojo.examerestaurantspringboot.endpoint.rest.IngredientAndRequiredQuantity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Dish {
@@ -45,10 +45,15 @@ public class Dish {
     }
 
     public int getAvailableDish() {
-        return availableDish;
+        List<Integer> result = new ArrayList<>();
+        for (IngredientAndRequiredQuantity ingredientAndRequiredQuantity : ingredientList) {
+             result.add((int) (ingredientAndRequiredQuantity.getCurrentStock() / ingredientAndRequiredQuantity.getRequiredQuantity()));
+        }
+
+        return result.stream().min(Integer::compareTo).get();
     }
 
-    public void setAvailableQuantity(int availableQuantity) {
-        this.availableDish = availableQuantity;
+    public void setAvailableDish(int availableDish) {
+        this.availableDish = availableDish;
     }
 }

@@ -115,7 +115,6 @@ public class StockMovementCrudOperations implements CrudOperations <StockMovemen
                 }
             }
 
-            System.out.println(stockMovements);
             if (result < 0) {
                 return result *= -1;
             } else {
