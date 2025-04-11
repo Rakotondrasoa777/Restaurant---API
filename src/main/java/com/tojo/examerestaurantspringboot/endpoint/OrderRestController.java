@@ -6,6 +6,7 @@ import com.tojo.examerestaurantspringboot.model.DishOrder;
 import com.tojo.examerestaurantspringboot.service.OrderService;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -29,5 +30,10 @@ public class OrderRestController {
     @PutMapping("/orders/{reference}/confirm")
     public OrderRest confirmOrder(@PathVariable String reference) {
         return orderService.confirmOrder(reference);
+    }
+
+    @PutMapping("/orders/{reference}/dishes/{dishId}")
+    public OrderRest changeStatusDishInOrder(@PathVariable String reference, @PathVariable int dishId) throws SQLException {
+        return orderService.changeStatus(reference, dishId);
     }
 }

@@ -131,12 +131,37 @@ public class DishOrderCrudOperations implements CrudOperations <DishOrder>{
                             resultSet.getInt("quantity_of_dish"),
                             resultSet.getString("reference_order")
                     );
-                    dishOrder.setStatusDishOrder(getDishOrderStatusByReferenceOrder(dishOrder.getReferenceOrder()));
+                    dishOrder.setStatusDishOrder(getDishOrderByReferenceAndIdDishOrder(referenceOrder, dishOrder.getIdDishOrder()));
                     dishOrders.add(dishOrderRestMapper.apply(dishOrder));
                 }
             }
 
             return dishOrders;
+        } catch (SQLException e) {
+            throw new ServerException(e);
+        }
+    }
+
+    public List<DishOrderStatus> getDishOrderByReferenceAndIdDishOrder(String referenceOrder, int dishOrderId) {
+        String sql = "select status, date_dish_order_status from dish_order_status where reference_order = ? and id_dish_order = ?";
+        List<DishOrderStatus> dishOrderStatuses = new ArrayList<>();
+
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, referenceOrder);
+            preparedStatement.setInt(2, dishOrderId);
+
+            try(ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    DishOrderStatus dishOrderStatus = new DishOrderStatus(
+                            Status.valueOf(resultSet.getString("status")),
+                            resultSet.getTimestamp("date_dish_order_status")
+                    );
+                    dishOrderStatuses.add(dishOrderStatus);
+                }
+            }
+
+            return dishOrderStatuses;
         } catch (SQLException e) {
             throw new ServerException(e);
         }
@@ -158,7 +183,7 @@ public class DishOrderCrudOperations implements CrudOperations <DishOrder>{
                             resultSet.getInt("quantity_of_dish"),
                             resultSet.getString("reference_order")
                     );
-                    dishOrder.setStatusDishOrder(getDishOrderStatusByReferenceOrder(referenceOrder));
+                    dishOrder.setStatusDishOrder(getDishOrderByReferenceAndIdDishOrder(referenceOrder, dishOrder.getIdDishOrder()));
                     dishOrders.add(dishOrder);
                 }
             }

@@ -5,8 +5,10 @@ import com.tojo.examerestaurantspringboot.dao.operations.OrderCrudOperations;
 import com.tojo.examerestaurantspringboot.endpoint.rest.OrderRest;
 import com.tojo.examerestaurantspringboot.endpoint.rest.UpdateDishOrder;
 import com.tojo.examerestaurantspringboot.model.DishOrder;
+import com.tojo.examerestaurantspringboot.model.Order;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Service
@@ -29,5 +31,9 @@ public class OrderService {
 
     public OrderRest confirmOrder(String reference) {
         return orderCrudOperations.confirmOrder(reference);
+    }
+
+    public OrderRest changeStatus(String reference, int idDish) throws SQLException {
+        return orderCrudOperations.changeStatusDish(reference, idDish);
     }
 }
